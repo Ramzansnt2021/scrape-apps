@@ -1,0 +1,5 @@
+{% extends "layouts.html"%}
+{% block content %}
+    <h1>About page</h1>
+    <button class="btn btn-success"><a href="{{ url_for('downloads', filename="scrape.csv") }}" > Download File</a></button>
+{% endblock content %}

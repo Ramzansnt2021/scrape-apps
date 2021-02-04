@@ -1,0 +1,25 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+header {
+  position: sticky;
+  display: block;
+  width: 100%;
+  background-color: #fff;
+  z-index: 999;
+  top: 0;
+}
+header.main-menus {
+  margin: auto;
+  padding: auto;
+}
+button a {
+  color: #000;
+  text-decoration: none;
+}
+button a:hover {
+  color: #fff;
+  text-decoration: none;
+}

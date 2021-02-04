@@ -1,0 +1,41 @@
+{% extends "layouts.html"%} {% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <h1>Home data</h1>
+    {% for post in posts%}
+    <h2>{{ post.title}}</h2>
+    <p>By {{ post.author}} on {{ post.Created_on}}</p>
+    <p>{{ post.Content }}</p>
+    {%endfor%}
+  </div>
+</div>
+
+{% endblock content %} 
+
+{% block uploads%}
+
+  {% if error %}
+
+      <p class="alert alert-warning">{{ error }}</p>
+
+  {% endif %}
+
+  {% if filename %}
+    <p class="alert alert-success">{{ filename }}</p>
+    <button class="btn btn-danger text-white "><a href="/result"> Run</a></button>
+  {% endif %}
+<form action="/home" method="post" enctype="multipart/form-data">
+  <fieldset>
+    <div class="row mx-auto">
+      <legend class="col-md-12">Upload file</legend>
+      <div class="col-md-8">
+        <input type="file" name="file" id="files" />
+      </div>
+      <div class="col-md-4">
+        <input type="submit" class="btn btn-outline-secondary" value="Upload" name="upload" />
+      </div>
+    </div>
+  </fieldset>
+</form>
+{% endblock uploads%}
