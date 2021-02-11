@@ -109,7 +109,7 @@ def products(urls):
         "profile.default_content_setting_values.notifications": 1
     })
     option.headless = True
-    driver = webdriver.Chrome(chrome_options=option, executable_path="./opt/render/project/src/chromedriver")
+    driver = webdriver.Chrome(chrome_options=option, executable_path="/opt/render/project/src/chromedriver")
     
     fp = open(urls,'r', encoding='utf-8')
     url = fp.readlines()
