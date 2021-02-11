@@ -71,16 +71,6 @@ def home():
         
         if check_file(filename) == False:
             error = "This file isn't allowed"
-        elif path.exists(filename):
-            # get the path to the file in the current directory
-            src = path.realpath(file);
-            # rename the original file
-            i=1
-            for file in os.listdir(file):
-                src=file
-                dst="new_link_file"+str(i)+".txt"
-                os.rename(src,dst)
-                i+=1
             return render_template('home.html', error=error)
 
         
