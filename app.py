@@ -3,6 +3,7 @@ from flask import Flask, redirect, url_for, render_template, request, send_from_
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.utils import ChromeType
 import pandas as pd
 from bs4 import BeautifulSoup
 import os, glob, shutil
@@ -111,7 +112,7 @@ def products(urls):
     })
     option.headless = True
 #     driver = webdriver.Chrome(chrome_options=option, executable_path="/opt/render/project/src/chromedriver")
-    driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=option)
+    driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install(), chrome_options=option)
     fp = open(urls,'r', encoding='utf-8')
     url = fp.readlines()
     for links in url:
