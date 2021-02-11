@@ -27,16 +27,24 @@ posts = [
     ]
 
 ALLOWED_EXTS = {"txt"}
+UPLOAD_DIRECTORY = basedir + r'/static/uploads'
+DOWN_DIRECTORY = basedir + r'/static/downloads'
+ACCESS_LINKS = basedir + r'/static/uploads/*.txt'
+app.config['UPLOAD_DIRECTORY'] = UPLOAD_DIRECTORY
+app.config['DOWN_DIRECTORY'] = DOWN_DIRECTORY
+app.config['ACCESS_LINKS'] = ACCESS_LINKS
 
-UPLOAD_DIRECTORY = os.path.join(basedir,'static', 'uploads')
-DOWN_DIRECTORY = os.path.join(basedir,'static', 'downloads')
-ACCESS_LINKS = os.path.join(basedir, "static", "uploads" ,r'*.txt')
+DOWN_FILE = basedir + r"/static/uploads/scrape.csv"
+app.config['DOWN_FILE'] = DOWN_FILE
+# UPLOAD_DIRECTORY = os.path.join(basedir,'static', 'uploads')
+# DOWN_DIRECTORY = os.path.join(basedir,'static', 'downloads')
+# ACCESS_LINKS = os.path.join(basedir, "static", "uploads" ,r'*.txt')
 
-if not os.path.exists(DOWN_DIRECTORY):
-    os.makedirs(os.path.join(basedir,'static', DOWN_DIRECTORY))
+# if not os.path.exists(DOWN_DIRECTORY):
+#     os.makedirs(os.path.join(basedir,'static', DOWN_DIRECTORY))
 
-if not os.path.exists(UPLOAD_DIRECTORY):
-    os.makedirs(os.path.join(basedir,'static', UPLOAD_DIRECTORY))
+# if not os.path.exists(UPLOAD_DIRECTORY):
+#     os.makedirs(os.path.join(basedir,'static', UPLOAD_DIRECTORY))
 
 def check_file(file):
     return '.' in file and file.rsplit('.', 1)[1].lower() in ALLOWED_EXTS
@@ -77,32 +85,9 @@ def home():
 
         
 
-        file.save(os.path.join(basedir, "static", "uploads", filename))
+        file.save(os.path.join(UPLOAD_DIRECTORY, filename))
     
     return render_template('home.html', title='Home', filename=filename)
-
-@app.route('/result')
-def about():
-    list_of_files = glob.glob(ACCESS_LINKS) # * means all if need specific format then *.csv
-    latest_file = max(list_of_files, key=os.path.getctime)
-    scraper = product_files(latest_file)
-    print(scraper)
-    
-    source = os.path.join(basedir, "static", "uploads","scrape.csv")
-    destination = DOWN_DIRECTORY
-    filename = os.path.basename(source)
-    dest = os.path.join(destination,filename)
-    shutil.move(source, dest)
-    return render_template('about.html', title='Results', scraper=scraper) 
-
-@app.route('/downloads/<path:filename>', methods=['GET', 'POST'])
-def downloads(filename):
-    # uploads = os.path.join("D:/formsProject/scrape/project/downloads/bot.csv", app.config['downloads'])
-    return send_from_directory(DOWN_DIRECTORY, filename=filename, as_attachment=True)
-
-@app.route('/admin')
-def admin():
-    return redirect(url_for("home"))
 
 def products(urls):
 #         url= 'https://www.router-switch.com/asa5512-k9-p-4613.html'
@@ -116,8 +101,8 @@ def products(urls):
     old_prices = []
     sale_prices = []
     Images = []
-    CHROMEDRIVER_PATH= os.environ.get('CHROMEDRIVER_PATH',r"/app/.chromedriver/bin/chromedriver") 
-    GOOGLE_CHROME_BIN= os.environ.get('GOOGLE_CHROME_BIN', r"/app/.apt/usr/bin/google-chrome")
+#     CHROMEDRIVER_PATH= os.environ.get('CHROMEDRIVER_PATH',r"/app/.chromedriver/bin/chromedriver") 
+    GOOGLE_CHROME_BIN= "https://github.com/heroku/heroku-buildpack-google-chrome"
 
     option = Options()
     option.add_argument("--disable-infobars")
@@ -134,7 +119,7 @@ def products(urls):
         "profile.default_content_setting_values.notifications": 1
     })
     option.headless = True
-    driver = webdriver.Chrome(chrome_options=option, executable_path=os.environ.get("CHROMEDRIVER_PATH"))
+    driver = webdriver.Chrome(chrome_options=option, executable_path=os.environ.get("./chromedriver"))
     
     fp = open(urls,'r', encoding='utf-8')
     url = fp.readlines()
@@ -235,21 +220,49 @@ def products(urls):
     
     data = {'SKUs': skus, 'Category': category, 'Product ID': prod_ID, 'Brand': brands, 'Description': sh_descrip, 'OLD Price': old_prices,
             'SALE Price': sale_prices, 'Long descriptions': long_descrip, 'Images': Images, }
-    
+    fp.close()
     return data
 
 def product_files(data):
-    source = os.path.join(basedir, "static", "uploads",r"scrape.csv")
+    SOURCE = basedir + r"/static/uploads/scrape.csv"
+    app.config['SOURCE'] = SOURCE
     df = pd.DataFrame.from_dict(products(data), orient='index')
     df = df.transpose()
     print(df)
     print("Got these many results:", df.shape)
 
     # file_name = input("Name of the file using CSV extention e.g; master files.csv: ")
-    df.to_csv(source , index=False)
+    df.to_csv(SOURCE , index=False)
     
 
     return df
+
+@app.route('/result')
+def about():
+    list_of_files = glob.glob(ACCESS_LINKS) # * means all if need specific format then *.csv
+    latest_file = max(list_of_files, key=os.path.getctime)
+    scraper = product_files(latest_file)
+    print(scraper)
+    
+    source = os.path.join(DOWN_FILE)
+    destination = DOWN_DIRECTORY
+    filename = os.path.basename(source)
+    dest = os.path.join(destination,filename)
+    shutil.move(source, dest)
+    return render_template('about.html', title='Results', scraper=scraper) 
+
+@app.route('/downloads/<path:filename>', methods=['GET', 'POST'])
+def downloads(filename):
+    # uploads = os.path.join("D:/formsProject/scrape/project/downloads/bot.csv", app.config['downloads'])
+    return send_from_directory(DOWN_DIRECTORY, filename=filename, as_attachment=True)
+
+@app.route('/admin')
+def admin():
+    return redirect(url_for("home"))
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True, use_reloader=True, )
